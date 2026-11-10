@@ -2,7 +2,7 @@
 
 *From HTML Forms to Reliable AI Tools*
 
-DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 02 exposes the existing form as a declarative tool. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
+DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 03 adds imperative tools for finding tasks and updating their status while retaining declarative task creation. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
 
 ## Run DevDesk
 
@@ -37,6 +37,12 @@ Each browser origin keeps its own board in `localStorage`. The board starts with
 In a browser with declarative WebMCP enabled, use an agent or the WebMCP inspector to invoke `create_task` with a title, project, and priority. The browser fills the form and waits for you to review and submit it. Edit the values before selecting **Add task**; only the submitted values are created. Cancelling the request or resetting the form before submission creates no task. This tool is declared in HTML; the app does not also register it imperatively.
 
 Native declarative support is experimental and differs from imperative feature detection: seeing `document.modelContext` alone does not establish that form tools are supported. Check discovery in your browser. No native browser/agent version has yet been verified for this checkpoint.
+
+## Find and update a task
+
+Use `list_tasks` to find matching tasks. Project filters match the entire project name ignoring case; query filters match a case-insensitive substring of the title. Results include every match and its ID. Call `set_task_status` with that ID and a status. For example, find “Write release notes” in Design System and update `DD-104`; `DD-101` remains unchanged. A title alone is not an identifier. Manual controls and tool calls use the same board state.
+
+The imperative API is feature-detected and its registrations are cleaned up during development reloads. Native browser support has not yet been verified for this checkpoint.
 
 ## Read the code
 

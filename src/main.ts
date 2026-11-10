@@ -1,6 +1,7 @@
 import './styles.css'
 import { exampleTasks } from './fixtures'
-import { loadTasks, saveTasks } from './storage'
+import { createBoardState } from './state'
+import { registerTools } from './webmcp'
 import { createTask, setTaskStatus, statuses, taskLimits, type Task, type Status } from './tasks'
 
 const statusLabels: Record<Status, string> = {
@@ -29,9 +30,9 @@ try {
   // The board is still usable when browser policy blocks storage access.
 }
 
-const loaded = loadTasks(storage)
-let tasks = loaded.tasks
-storageWarning.hidden = loaded.available
+const state = createBoardState(storage)
+let tasks = state.tasks
+storageWarning.hidden = state.available
 
 function renderCard(task: Task): HTMLLIElement {
   const card = cardTemplate.content.firstElementChild!.cloneNode(true) as HTMLLIElement
@@ -85,7 +86,7 @@ function renderBoard(focusedTask?: string) {
 
 function updateBoard(nextTasks: readonly Task[], message: string, focusedTask?: string) {
   tasks = nextTasks
-  storageWarning.hidden = saveTasks(storage, tasks)
+  storageWarning.hidden = state.update(tasks)
   renderBoard(focusedTask)
   boardMessage.textContent = message
 }
@@ -125,3 +126,7 @@ resetButton.addEventListener('click', () => {
 })
 
 renderBoard()
+
+const modelContext = (document as Document & { modelContext?: Parameters<typeof registerTools>[0] }).modelContext
+const registrations = registerTools(modelContext, { getTasks: () => state.tasks, update: updateBoard })
+if (import.meta.hot) import.meta.hot.dispose(() => registrations.abort())
