@@ -6,7 +6,7 @@ DevDesk is a small task board for a hands-on series about making web apps usable
 
 ## Run DevDesk
 
-Use Node.js 24 and npm. If you use nvm, run `nvm install` and `nvm use` from the project directory.
+Use Node.js 26 or later and npm. If you use nvm, run `nvm install` and `nvm use` from the project directory.
 
 ```sh
 npm ci
