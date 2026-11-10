@@ -15,7 +15,7 @@ const output = (value: unknown) => ({ content: [{ type: 'text' as const, text: J
 
 export function registerTools(context: ModelContext | undefined, board: {
   getTasks: () => readonly Task[]
-  update: (tasks: readonly Task[], message: string) => void
+  update: (tasks: readonly Task[], message: string) => boolean
 }) {
   const controller = new AbortController()
   if (!context) return controller
@@ -32,7 +32,7 @@ export function registerTools(context: ModelContext | undefined, board: {
       async execute(input) {
         if ((input.project !== undefined && typeof input.project !== 'string') ||
             (input.query !== undefined && typeof input.query !== 'string') ||
-            (input.status !== undefined && !isStatus(input.status))) return output({ error: 'Invalid filters.' })
+            (input.status !== undefined && !isStatus(input.status))) return output({ code: 'INVALID_INPUT', error: 'Provide valid filters.' })
         const project = typeof input.project === 'string' ? input.project.toLowerCase() : undefined
         const query = typeof input.query === 'string' ? input.query.toLowerCase() : undefined
         return output(board.getTasks().filter(task =>
@@ -50,11 +50,15 @@ export function registerTools(context: ModelContext | undefined, board: {
       }, required: ['taskId', 'status'], additionalProperties: false },
       annotations: { untrustedContentHint: true },
       async execute(input) {
-        if (typeof input.taskId !== 'string') return output({ error: 'Provide a task ID.' })
+        if (typeof input.taskId !== 'string' || !input.taskId.trim() || !isStatus(input.status)) return output({ code: 'INVALID_INPUT', error: 'Provide a task ID and valid status.' })
+        const current = board.getTasks().find(task => task.id === input.taskId)
+        if (!current) return output({ code: 'TASK_NOT_FOUND', error: 'Task not found. List tasks and choose a current ID.' })
         const result = setTaskStatus(board.getTasks(), input.taskId, input.status)
-        if (!result.ok) return output({ error: result.message })
-        board.update(result.tasks, `Updated ${result.task.title}.`)
-        return output(result.task)
+        if (!result.ok) return output({ code: 'INVALID_INPUT', error: result.message })
+        const changed = current.status !== result.task.status
+        if (!changed) return output({ ok: true, changed: false, task: result.task })
+        const persisted = board.update(result.tasks, `Updated ${result.task.title}.`)
+        return output({ ok: true, changed: true, persisted, task: result.task, ...(!persisted && { warning: 'Change is in memory only and may be lost on reload.' }) })
       },
     },
   ]

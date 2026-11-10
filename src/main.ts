@@ -86,9 +86,11 @@ function renderBoard(focusedTask?: string) {
 
 function updateBoard(nextTasks: readonly Task[], message: string, focusedTask?: string) {
   tasks = nextTasks
-  storageWarning.hidden = state.update(tasks)
+  const persisted = state.update(tasks)
+  storageWarning.hidden = persisted
   renderBoard(focusedTask)
   boardMessage.textContent = message
+  return persisted
 }
 
 function clearFormError() {

@@ -2,7 +2,7 @@
 
 *From HTML Forms to Reliable AI Tools*
 
-DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 03 adds imperative tools for finding tasks and updating their status while retaining declarative task creation. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
+DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 04 reports invalid input, missing tasks, unchanged updates, and storage failures honestly. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
 
 ## Run DevDesk
 
@@ -43,6 +43,16 @@ Native declarative support is experimental and differs from imperative feature d
 Use `list_tasks` to find matching tasks. Project filters match the entire project name ignoring case; query filters match a case-insensitive substring of the title. Results include every match and its ID. Call `set_task_status` with that ID and a status. For example, find “Write release notes” in Design System and update `DD-104`; `DD-101` remains unchanged. A title alone is not an identifier. Manual controls and tool calls use the same board state.
 
 The imperative API is feature-detected and its registrations are cleaned up during development reloads. Native browser support has not yet been verified for this checkpoint.
+
+## State and control
+
+Status updates look up the current ID at invocation time. Invalid input returns `INVALID_INPUT`; a stale ID returns `TASK_NOT_FOUND` with a suggestion to list tasks again. Repeating the same status returns `changed: false`. A failed save reports `persisted: false` and a memory-only warning; the visible board still changes. Task text is displayed as text and returned as data. Tool annotations are hints, not enforcement.
+
+| Action | Control |
+| --- | --- |
+| Create task | Review and submit the prefilled form |
+| Update a known task | Executes directly |
+| Reset examples | Confirm in the browser |
 
 ## Read the code
 
