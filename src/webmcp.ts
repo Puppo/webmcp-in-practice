@@ -5,7 +5,7 @@ interface ModelTool {
   description: string
   inputSchema: object
   annotations?: object
-  execute: (input: Record<string, unknown>) => Promise<{ content: { type: 'text'; text: string }[] }>
+  execute: (input: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<{ content: { type: 'text'; text: string }[] }>
 }
 interface ModelContext {
   registerTool(tool: ModelTool, options: { signal: AbortSignal }): Promise<void>
@@ -16,6 +16,7 @@ const output = (value: unknown) => ({ content: [{ type: 'text' as const, text: J
 export function registerTools(context: ModelContext | undefined, board: {
   getTasks: () => readonly Task[]
   update: (tasks: readonly Task[], message: string) => boolean
+  archive?: (project: string | undefined, signal?: AbortSignal) => Promise<object>
 }) {
   const controller = new AbortController()
   if (!context) return controller
@@ -62,6 +63,16 @@ export function registerTools(context: ModelContext | undefined, board: {
       },
     },
   ]
+  if (board.archive) tools.push({
+    name: 'archive_completed_tasks',
+    description: 'Ask the user to review completed tasks before archiving them.',
+    inputSchema: { type: 'object', properties: { project: { type: 'string', description: 'Exact project name, ignoring case.' } }, additionalProperties: false },
+    annotations: { consequentialHint: true, untrustedContentHint: true },
+    async execute(input, options) {
+      if (input.project !== undefined && (typeof input.project !== 'string' || !input.project.trim())) return output({ code: 'INVALID_INPUT', error: 'Provide a project name or omit it.' })
+      return output(await board.archive!(input.project as string | undefined, options?.signal))
+    },
+  })
   for (const tool of tools) void context.registerTool(tool, { signal: controller.signal }).catch(error => {
     if (!controller.signal.aborted) console.error('Could not register WebMCP tool:', error)
   })

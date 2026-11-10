@@ -2,7 +2,7 @@
 
 *From HTML Forms to Reliable AI Tools*
 
-DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 05 introduces an outcome-focused evaluation matrix. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
+DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 06 adds a human-reviewed archive of completed tasks. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
 
 ## Run DevDesk
 
@@ -57,6 +57,14 @@ Status updates look up the current ID at invocation time. Invalid input returns 
 ## Evaluate outcomes
 
 See [the evaluation guide](docs/evaluations.md) and [acceptance cases](evals/cases.json). These are a starting point for model and browser evaluations; neither has been run or configured yet. `npm test` runs deterministic application tests without a model.
+
+## Archive completed tasks
+
+Invoke `archive_completed_tasks`, optionally scoped to a project, to open a review dialog. The operation waits for a human to confirm; cancellation, abort, timeout, or a changed board leaves the reviewed tasks in place. If the board changes during review, start a fresh review. Archived records remain visible below the board. Reset restores the examples and empties the archive after confirmation.
+
+The version 2 snapshot uses a new storage key. A valid version 1 board is loaded with an empty archive and the original snapshot is retained. Earlier checkpoints read their original snapshot and do not see newer archive changes.
+
+No controlled coding-agent comparison has been run. See the [evaluation guide](docs/evaluations.md) for existing limitations.
 
 ## Read the code
 

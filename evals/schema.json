@@ -58,6 +58,24 @@
       "annotations": {
         "untrustedContentHint": true
       }
+    },
+    {
+      "name": "archive_completed_tasks",
+      "description": "Ask the user to review completed tasks before archiving them.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Exact project name, ignoring case."
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "consequentialHint": true,
+        "untrustedContentHint": true
+      }
     }
   ]
 }

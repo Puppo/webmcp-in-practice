@@ -1,15 +1,19 @@
-import { loadTasks, saveTasks } from './storage'
+import { loadSnapshot, saveSnapshot } from './archive-storage'
 import type { Task } from './tasks'
 
 export function createBoardState(storage?: Storage) {
-  const loaded = loadTasks(storage)
-  let tasks = loaded.tasks
+  const loaded = loadSnapshot(storage)
+  let snapshot = loaded.snapshot
+  let revision = 0
   return {
-    get tasks() { return tasks },
+    get tasks() { return snapshot.tasks },
+    get archived() { return snapshot.archived },
+    get revision() { return revision },
     available: loaded.available,
-    update(next: readonly Task[]) {
-      tasks = next
-      return saveTasks(storage, tasks)
+    update(next: readonly Task[], archived = snapshot.archived) {
+      snapshot = { tasks: next, archived }
+      revision++
+      return saveSnapshot(storage, snapshot)
     },
   }
 }

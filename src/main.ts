@@ -2,6 +2,7 @@ import './styles.css'
 import { exampleTasks } from './fixtures'
 import { createBoardState } from './state'
 import { registerTools } from './webmcp'
+import { prepareArchive, applyArchive } from './archive'
 import { createTask, setTaskStatus, statuses, taskLimits, type Task, type Status } from './tasks'
 
 const statusLabels: Record<Status, string> = {
@@ -64,6 +65,12 @@ function renderCard(task: Task): HTMLLIElement {
 }
 
 function renderBoard(focusedTask?: string) {
+  const archivedList = document.querySelector<HTMLElement>('#archived-list')!
+  archivedList.replaceChildren(...state.archived.map(task => {
+    const item = document.createElement('li')
+    item.textContent = `${task.id} — ${task.title} (${task.project})`
+    return item
+  }))
   taskCount.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`
   let nextFocus: HTMLSelectElement | undefined
 
@@ -84,9 +91,9 @@ function renderBoard(focusedTask?: string) {
   nextFocus?.focus()
 }
 
-function updateBoard(nextTasks: readonly Task[], message: string, focusedTask?: string) {
+function updateBoard(nextTasks: readonly Task[], message: string, focusedTask?: string, archived?: readonly Task[]) {
   tasks = nextTasks
-  const persisted = state.update(tasks)
+  const persisted = state.update(tasks, archived)
   storageWarning.hidden = persisted
   renderBoard(focusedTask)
   boardMessage.textContent = message
@@ -124,11 +131,58 @@ form.addEventListener('submit', (event) => {
 
 resetButton.addEventListener('click', () => {
   if (!window.confirm('Restore the example tasks? This will replace your local board changes.')) return
-  updateBoard(exampleTasks(), 'The example board was restored.')
+  updateBoard(exampleTasks(), 'The example board was restored.', undefined, [])
 })
 
 renderBoard()
 
+const dialog = document.querySelector<HTMLDialogElement>('#archive-dialog')!
+const preview = document.querySelector<HTMLElement>('#archive-preview')!
+const archiveMessage = document.querySelector<HTMLElement>('#archive-message')!
+const confirmArchive = document.querySelector<HTMLButtonElement>('#archive-confirm')!
+const cancelArchive = document.querySelector<HTMLButtonElement>('#archive-cancel')!
+let pendingArchive = false
+
+function reviewArchive(project: string | undefined, signal?: AbortSignal): Promise<object> {
+  if (pendingArchive) return Promise.resolve({ code: 'REVIEW_IN_PROGRESS' })
+  const snapshot = prepareArchive(state.tasks, state.revision, project)
+  const eligible = snapshot.tasks
+  if (!eligible.length) return Promise.resolve({ ok: true, changed: false, archived: [] })
+  if (signal?.aborted) return Promise.resolve({ code: 'CANCELLED' })
+  preview.replaceChildren(...eligible.map(task => {
+    const item = document.createElement('li')
+    item.textContent = `${task.id} — ${task.title} (${task.project})`
+    return item
+  }))
+  archiveMessage.textContent = ''
+  pendingArchive = true
+  dialog.showModal()
+  return new Promise(resolve => {
+    const finish = (result: object) => {
+      clearTimeout(timeout)
+      confirmArchive.removeEventListener('click', confirm)
+      cancelArchive.removeEventListener('click', cancel)
+      dialog.removeEventListener('cancel', cancel)
+      signal?.removeEventListener('abort', cancel)
+      pendingArchive = false
+      dialog.close()
+      resolve(result)
+    }
+    const cancel = () => finish({ code: 'CANCELLED' })
+    const confirm = () => {
+      const result = applyArchive(snapshot, state.revision, state.tasks, state.archived)
+      if (!result.ok) return finish({ code: result.code, error: 'The board changed. Start a new review.' })
+      const saved = updateBoard(result.tasks, `Archived ${eligible.length} tasks.`, undefined, result.archived)
+      finish({ ok: true, changed: true, persisted: saved, archived: eligible })
+    }
+    const timeout = setTimeout(cancel, 120_000)
+    confirmArchive.addEventListener('click', confirm)
+    cancelArchive.addEventListener('click', cancel)
+    dialog.addEventListener('cancel', cancel)
+    signal?.addEventListener('abort', cancel, { once: true })
+  })
+}
+
 const modelContext = (document as Document & { modelContext?: Parameters<typeof registerTools>[0] }).modelContext
-const registrations = registerTools(modelContext, { getTasks: () => state.tasks, update: updateBoard })
+const registrations = registerTools(modelContext, { getTasks: () => state.tasks, update: updateBoard, archive: reviewArchive })
 if (import.meta.hot) import.meta.hot.dispose(() => registrations.abort())
