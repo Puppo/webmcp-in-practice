@@ -12,7 +12,8 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:smoke": "vitest run src/eval-smoke.test.ts"
   },
   "devDependencies": {
     "typescript": "^7.0.2",

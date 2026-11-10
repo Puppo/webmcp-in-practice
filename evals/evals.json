@@ -1,12 +1,102 @@
 [
   {
     "name": "Find Design System release notes",
-    "messages": [{ "role": "user", "type": "message", "content": "Find the Design System release notes task." }],
-    "expectedCall": [{ "functionName": "list_tasks", "arguments": { "project": "Design System", "query": "release notes" }, "mockOutput": [{ "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "high", "status": "in-progress" }] }]
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Find the Design System release notes task."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "list_tasks",
+        "arguments": {
+          "project": "Design System",
+          "query": "release notes"
+        },
+        "mockOutput": [
+          {
+            "id": "DD-104",
+            "title": "Write release notes",
+            "project": "Design System",
+            "priority": "low",
+            "status": "in-progress"
+          }
+        ]
+      }
+    ]
   },
   {
     "name": "Complete a known task",
-    "messages": [{ "role": "user", "type": "message", "content": "Mark DD-104 done." }],
-    "expectedCall": [{ "functionName": "set_task_status", "arguments": { "taskId": "DD-104", "status": "done" } }]
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Mark DD-104 done."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "set_task_status",
+        "arguments": {
+          "taskId": "DD-104",
+          "status": "done"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Find ambiguous release notes",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Find the release notes tasks."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "list_tasks",
+        "arguments": {
+          "query": "release notes"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Look up a missing ID",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "Mark DD-missing done."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "set_task_status",
+        "arguments": {
+          "taskId": "DD-missing",
+          "status": "done"
+        }
+      }
+    ]
+  },
+  {
+    "name": "List all tasks",
+    "messages": [
+      {
+        "role": "user",
+        "type": "message",
+        "content": "List all tasks."
+      }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "list_tasks",
+        "arguments": {}
+      }
+    ]
   }
 ]
