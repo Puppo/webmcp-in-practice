@@ -1,0 +1,63 @@
+{
+  "tools": [
+    {
+      "name": "list_tasks",
+      "description": "Find tasks on the board. Use this to identify a task before updating it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "string",
+            "description": "Exact project name, ignoring case."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in-progress",
+              "done"
+            ]
+          },
+          "query": {
+            "type": "string",
+            "description": "Case-insensitive title substring."
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "untrustedContentHint": true
+      }
+    },
+    {
+      "name": "set_task_status",
+      "description": "Update a known task by its ID. Find the task first if its identity is unclear.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "description": "The unique task ID."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in-progress",
+              "done"
+            ]
+          }
+        },
+        "required": [
+          "taskId",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "untrustedContentHint": true
+      }
+    }
+  ]
+}
