@@ -2,7 +2,7 @@
 
 *From HTML Forms to Reliable AI Tools*
 
-DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 01 establishes the ordinary web app. You can create a task, move it through the board, and reload to see what was saved. This chapter runs in a modern browser without a WebMCP flag.
+DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 02 exposes the existing form as a declarative tool. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
 
 ## Run DevDesk
 
@@ -31,6 +31,12 @@ Open the local URL printed by Vite.
 3. Reload to see your saved board. Select **Reset example board** and confirm to replace local changes with the original six tasks.
 
 Each browser origin keeps its own board in `localStorage`. The board starts with examples if the saved data is missing or invalid. If storage is unavailable, you can keep working on the page and DevDesk shows a warning. Changes made during that time may be lost on reload. The demo has no backend or cross-tab synchronization. If several tabs edit the same board, the last save wins.
+
+## Try declarative creation
+
+In a browser with declarative WebMCP enabled, use an agent or the WebMCP inspector to invoke `create_task` with a title, project, and priority. The browser fills the form and waits for you to review and submit it. Edit the values before selecting **Add task**; only the submitted values are created. Cancelling the request or resetting the form before submission creates no task. This tool is declared in HTML; the app does not also register it imperatively.
+
+Native declarative support is experimental and differs from imperative feature detection: seeing `document.modelContext` alone does not establish that form tools are supported. Check discovery in your browser. No native browser/agent version has yet been verified for this checkpoint.
 
 ## Read the code
 

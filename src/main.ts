@@ -106,6 +106,7 @@ form.addEventListener('submit', (event) => {
   }, `DD-${crypto.randomUUID()}`)
 
   if (!result.ok) {
+    if (event.agentInvoked) event.respondWith(Promise.resolve(result.message))
     formError.textContent = result.message
     formError.hidden = false
     return
@@ -115,6 +116,7 @@ form.addEventListener('submit', (event) => {
   form.reset()
   updateBoard(result.tasks, `Added ${result.task.title} to To do.`)
   titleInput.focus()
+  if (event.agentInvoked) event.respondWith(Promise.resolve(`Created ${result.task.id}: ${result.task.title}.`))
 })
 
 resetButton.addEventListener('click', () => {

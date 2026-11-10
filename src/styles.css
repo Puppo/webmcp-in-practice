@@ -319,3 +319,7 @@ footer { margin-block: 1.15rem 2rem; }
   form { grid-template-columns: 1fr; }
   .series { max-width: 12rem; }
 }
+
+/* Browsers without declarative WebMCP ignore these experimental selectors. */
+form:tool-form-active { outline: 2px solid #496f6b; outline-offset: 8px; }
+button:tool-submit-active { outline: 3px solid #496f6b; outline-offset: 4px; }
