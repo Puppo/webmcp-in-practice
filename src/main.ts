@@ -2,7 +2,7 @@ import './styles.css'
 import { exampleTasks } from './fixtures'
 import { createBoardState } from './state'
 import { registerTools } from './webmcp'
-import { prepareArchive, applyArchive } from './archive'
+import { createArchiveReview } from './archive-review'
 import { createTask, setTaskStatus, statuses, taskLimits, type Task, type Status } from './tasks'
 
 const statusLabels: Record<Status, string> = {
@@ -136,52 +136,25 @@ resetButton.addEventListener('click', () => {
 
 renderBoard()
 
-const dialog = document.querySelector<HTMLDialogElement>('#archive-dialog')!
-const preview = document.querySelector<HTMLElement>('#archive-preview')!
-const archiveMessage = document.querySelector<HTMLElement>('#archive-message')!
-const confirmArchive = document.querySelector<HTMLButtonElement>('#archive-confirm')!
-const cancelArchive = document.querySelector<HTMLButtonElement>('#archive-cancel')!
-let pendingArchive = false
-
-function reviewArchive(project: string | undefined, signal?: AbortSignal): Promise<object> {
-  if (pendingArchive) return Promise.resolve({ code: 'REVIEW_IN_PROGRESS' })
-  const snapshot = prepareArchive(state.tasks, state.revision, project)
-  const eligible = snapshot.tasks
-  if (!eligible.length) return Promise.resolve({ ok: true, changed: false, archived: [] })
-  if (signal?.aborted) return Promise.resolve({ code: 'CANCELLED' })
-  preview.replaceChildren(...eligible.map(task => {
-    const item = document.createElement('li')
-    item.textContent = `${task.id} — ${task.title} (${task.project})`
-    return item
-  }))
-  archiveMessage.textContent = ''
-  pendingArchive = true
-  dialog.showModal()
-  return new Promise(resolve => {
-    const finish = (result: object) => {
-      clearTimeout(timeout)
-      confirmArchive.removeEventListener('click', confirm)
-      cancelArchive.removeEventListener('click', cancel)
-      dialog.removeEventListener('cancel', cancel)
-      signal?.removeEventListener('abort', cancel)
-      pendingArchive = false
-      dialog.close()
-      resolve(result)
-    }
-    const cancel = () => finish({ code: 'CANCELLED' })
-    const confirm = () => {
-      const result = applyArchive(snapshot, state.revision, state.tasks, state.archived)
-      if (!result.ok) return finish({ code: result.code, error: 'The board changed. Start a new review.' })
-      const saved = updateBoard(result.tasks, `Archived ${eligible.length} tasks.`, undefined, result.archived)
-      finish({ ok: true, changed: true, persisted: saved, archived: eligible })
-    }
-    const timeout = setTimeout(cancel, 120_000)
-    confirmArchive.addEventListener('click', confirm)
-    cancelArchive.addEventListener('click', cancel)
-    dialog.addEventListener('cancel', cancel)
-    signal?.addEventListener('abort', cancel, { once: true })
-  })
-}
+const reviewArchive = createArchiveReview({
+  dialog: document.querySelector<HTMLDialogElement>('#archive-dialog')!,
+  confirm: document.querySelector<HTMLButtonElement>('#archive-confirm')!,
+  cancel: document.querySelector<HTMLButtonElement>('#archive-cancel')!,
+  show: tasks => {
+    const preview = document.querySelector<HTMLElement>('#archive-preview')!
+    preview.replaceChildren(...tasks.map(task => {
+      const item = document.createElement('li')
+      item.textContent = `${task.id} — ${task.title} (${task.project})`
+      return item
+    }))
+    document.querySelector<HTMLElement>('#archive-message')!.textContent = ''
+  },
+}, {
+  getTasks: () => state.tasks,
+  getArchived: () => state.archived,
+  getRevision: () => state.revision,
+  save: (tasks, archived) => updateBoard(tasks, `Archived ${archived.length - state.archived.length} tasks.`, undefined, archived),
+})
 
 const modelContext = (document as Document & { modelContext?: Parameters<typeof registerTools>[0] }).modelContext
 const registrations = registerTools(modelContext, { getTasks: () => state.tasks, update: updateBoard, archive: reviewArchive })
