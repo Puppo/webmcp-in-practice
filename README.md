@@ -2,7 +2,7 @@
 
 *From HTML Forms to Reliable AI Tools*
 
-DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 04 reports invalid input, missing tasks, unchanged updates, and storage failures honestly. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
+DevDesk is a small task board for a hands-on series about making web apps usable by browser agents. Part 05 introduces an outcome-focused evaluation matrix. You can create a task, move it through the board, and reload to see what was saved. Manual controls work in an ordinary modern browser; declarative discovery requires a compatible experimental browser and agent.
 
 ## Run DevDesk
 
@@ -53,6 +53,10 @@ Status updates look up the current ID at invocation time. Invalid input returns 
 | Create task | Review and submit the prefilled form |
 | Update a known task | Executes directly |
 | Reset examples | Confirm in the browser |
+
+## Evaluate outcomes
+
+See [the evaluation guide](docs/evaluations.md) and [acceptance cases](evals/cases.json). These are a starting point for model and browser evaluations; neither has been run or configured yet. `npm test` runs deterministic application tests without a model.
 
 ## Read the code
 
