@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f4ee" />
+    <title>DevDesk · WebMCP in Practice</title>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="brand" href="./">
+          <span class="brand-mark" aria-hidden="true">D<span>.</span></span>
+          <span>DevDesk</span>
+        </a>
+        <p class="series">WebMCP in Practice <span> / </span> Part 01</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow"><span aria-hidden="true"></span> Project workspace</p>
+        <h1 id="page-title">Task board<span>.</span></h1>
+        <p>Track work across projects, from to do to done.</p>
+      </section>
+
+      <section class="composer" aria-labelledby="create-title">
+        <h2 id="create-title">Create a task</h2>
+        <form id="task-form">
+          <label for="task-title">Title
+            <input id="task-title" name="title" placeholder="e.g. Review the changelog" required />
+          </label>
+          <label for="task-project">Project
+            <input id="task-project" name="project" placeholder="e.g. DevDesk" required />
+          </label>
+          <label for="task-priority">Priority
+            <select id="task-priority" name="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit"><span aria-hidden="true">+</span> Add task</button>
+        </form>
+        <p class="feedback" id="form-error" role="alert" hidden></p>
+      </section>
+
+      <p class="feedback storage-warning" id="storage-warning" role="status" hidden>
+        This browser couldn’t save your changes. You can keep working here, but your changes may be lost when you reload.
+      </p>
+      <p class="visually-hidden" id="board-message" role="status"></p>
+
+      <section class="board" aria-labelledby="board-title">
+        <div class="board-heading">
+          <div>
+            <h2 id="board-title">Tasks</h2>
+            <p id="task-count"></p>
+          </div>
+          <button id="reset-board" class="secondary-button" type="button">Reset example board</button>
+        </div>
+
+        <div class="lanes">
+          <section class="lane" data-status="todo" aria-labelledby="todo-heading">
+            <header><h3 id="todo-heading">To do</h3><span class="lane-count" aria-hidden="true"></span></header>
+            <p class="empty-lane" hidden>No tasks to do.</p>
+            <ul class="task-list" role="list" aria-labelledby="todo-heading"></ul>
+          </section>
+          <section class="lane" data-status="in-progress" aria-labelledby="in-progress-heading">
+            <header><h3 id="in-progress-heading">In progress</h3><span class="lane-count" aria-hidden="true"></span></header>
+            <p class="empty-lane" hidden>No tasks in progress.</p>
+            <ul class="task-list" role="list" aria-labelledby="in-progress-heading"></ul>
+          </section>
+          <section class="lane" data-status="done" aria-labelledby="done-heading">
+            <header><h3 id="done-heading">Done</h3><span class="lane-count" aria-hidden="true"></span></header>
+            <p class="empty-lane" hidden>No completed tasks.</p>
+            <ul class="task-list" role="list" aria-labelledby="done-heading"></ul>
+          </section>
+        </div>
+      </section>
+
+      <footer>DevDesk · Local workspace</footer>
+    </main>
+
+    <template id="task-card">
+      <li class="task-card">
+        <div class="card-meta">
+          <span class="task-id"></span>
+          <span class="task-priority"></span>
+        </div>
+        <h4 class="task-title"></h4>
+        <p class="task-project"></p>
+        <label class="status-field">Status <select name="status"></select></label>
+      </li>
+    </template>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
