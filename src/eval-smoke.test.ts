@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import evals from '../evals/evals.json'
 import { exampleTasks } from './fixtures'
 import { registerTools } from './webmcp'
 import type { Task } from './tasks'
@@ -51,5 +52,25 @@ describe('deterministic outcome smoke', () => {
     const board = freshBoard(false)
     expect(await board.call('set_task_status', { taskId: 'DD-104', status: 'done' })).toMatchObject({ changed: true, persisted: false })
     expect(board.tasks.find(task => task.id === 'DD-104')?.status).toBe('done')
+  })
+})
+
+type ExpectedNode = { functionName: string; arguments?: Record<string, unknown>; mockOutput?: unknown } | { ordered: ExpectedNode[] } | { unordered: ExpectedNode[] }
+
+const flatten = (nodes: ExpectedNode[]): Extract<ExpectedNode, { functionName: string }>[] => nodes.flatMap(node =>
+  'ordered' in node ? flatten(node.ordered) : 'unordered' in node ? flatten(node.unordered) : [node])
+
+// Eval patterns here are literal text wrapped in (?i), ^ and $, so stripping those yields a sample argument.
+const sampleArgument = (value: unknown) => typeof value === 'object' && value !== null && '$pattern' in value
+  ? String(value.$pattern).replace(/^\(\?i\)/, '').replace(/^\^|\$$/g, '')
+  : value
+
+describe('model eval mocks', () => {
+  it.each(evals.map(test => [test.name, test.expectedCall as ExpectedNode[]] as const))('%s returns what the real tools return', async (_name, expectedCall) => {
+    const board = freshBoard()
+    for (const call of flatten(expectedCall)) {
+      const input = Object.fromEntries(Object.entries(call.arguments ?? {}).map(([key, value]) => [key, sampleArgument(value)]))
+      expect(await board.call(call.functionName, input)).toEqual(call.mockOutput)
+    }
   })
 })

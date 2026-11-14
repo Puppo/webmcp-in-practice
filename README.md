@@ -23,6 +23,8 @@ Open the local URL printed by Vite.
 | `npm run preview` | Serve the built site locally after a build |
 | `npm test` | Run the task and storage tests once |
 | `npm run test:watch` | Rerun tests as files change |
+| `npm run eval:smoke` | Run the deterministic tool smoke evaluation (no model) |
+| `npm run eval:local` | Run model tool-selection evals against `evals/schema.json` (needs an API key in `.env`) |
 
 ## Try the board
 
@@ -56,7 +58,7 @@ Status updates look up the current ID at invocation time. Invalid input returns 
 
 ## Evaluate outcomes
 
-See [the evaluation guide](docs/evaluations.md) and [acceptance cases](evals/cases.json). These are a starting point for model and browser evaluations; neither has been run or configured yet. `npm test` runs deterministic application tests without a model.
+See [the evaluation guide](docs/evaluations.md) and [acceptance cases](evals/cases.json). `npm test` and `npm run eval:smoke` run deterministic application tests without a model. To run the model evaluation, copy `.env.example` to `.env`, add a provider key, then run `npm run eval:local`. Browser evaluations are not configured yet.
 
 ## Read the code
 

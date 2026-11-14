@@ -13,11 +13,13 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval:smoke": "vitest run src/eval-smoke.test.ts"
+    "eval:smoke": "vitest run src/eval-smoke.test.ts",
+    "eval:local": "webmcp-evals local -t evals/schema.json -e evals/evals.json"
   },
   "devDependencies": {
     "typescript": "^7.0.2",
     "vite": "^8.3.7",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "webmcp-evals": "0.1.0"
   }
 }

@@ -2,27 +2,17 @@
   {
     "name": "Find Design System release notes",
     "messages": [
-      {
-        "role": "user",
-        "type": "message",
-        "content": "Find the Design System release notes task."
-      }
+      { "role": "user", "type": "message", "content": "Find the Design System release notes task." }
     ],
     "expectedCall": [
       {
         "functionName": "list_tasks",
         "arguments": {
-          "project": "Design System",
-          "query": "release notes"
+          "project": { "$pattern": "(?i)^design system$" },
+          "query": { "$pattern": "(?i)^release notes$" }
         },
         "mockOutput": [
-          {
-            "id": "DD-104",
-            "title": "Write release notes",
-            "project": "Design System",
-            "priority": "low",
-            "status": "in-progress"
-          }
+          { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" }
         ]
       }
     ]
@@ -30,72 +20,127 @@
   {
     "name": "Complete a known task",
     "messages": [
-      {
-        "role": "user",
-        "type": "message",
-        "content": "Mark DD-104 done."
-      }
+      { "role": "user", "type": "message", "content": "Mark DD-104 done." }
     ],
     "expectedCall": [
       {
         "functionName": "set_task_status",
-        "arguments": {
-          "taskId": "DD-104",
-          "status": "done"
+        "arguments": { "taskId": "DD-104", "status": "done" },
+        "mockOutput": {
+          "ok": true,
+          "changed": true,
+          "persisted": true,
+          "task": { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "done" }
         }
+      }
+    ]
+  },
+  {
+    "name": "Complete a task named by title",
+    "messages": [
+      { "role": "user", "type": "message", "content": "Complete the Design System release notes task." }
+    ],
+    "expectedCall": [
+      {
+        "ordered": [
+          {
+            "functionName": "list_tasks",
+            "arguments": {
+              "project": { "$pattern": "(?i)^design system$" },
+              "query": { "$pattern": "(?i)release notes" }
+            },
+            "mockOutput": [
+              { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" }
+            ]
+          },
+          {
+            "functionName": "set_task_status",
+            "arguments": { "taskId": "DD-104", "status": "done" },
+            "mockOutput": {
+              "ok": true,
+              "changed": true,
+              "persisted": true,
+              "task": { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "done" }
+            }
+          }
+        ]
       }
     ]
   },
   {
     "name": "Find ambiguous release notes",
     "messages": [
-      {
-        "role": "user",
-        "type": "message",
-        "content": "Find the release notes tasks."
-      }
+      { "role": "user", "type": "message", "content": "Find the release notes tasks." }
     ],
     "expectedCall": [
       {
         "functionName": "list_tasks",
-        "arguments": {
-          "query": "release notes"
-        }
+        "arguments": { "query": { "$pattern": "(?i)release notes" } },
+        "mockOutput": [
+          { "id": "DD-101", "title": "Write release notes", "project": "DevDesk", "priority": "medium", "status": "todo" },
+          { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Ambiguous completion asks before updating",
+    "messages": [
+      { "role": "user", "type": "message", "content": "Complete the release notes task." }
+    ],
+    "expectedCall": [
+      {
+        "functionName": "list_tasks",
+        "arguments": { "query": { "$pattern": "(?i)release notes" } },
+        "mockOutput": [
+          { "id": "DD-101", "title": "Write release notes", "project": "DevDesk", "priority": "medium", "status": "todo" },
+          { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" }
+        ]
       }
     ]
   },
   {
     "name": "Look up a missing ID",
     "messages": [
-      {
-        "role": "user",
-        "type": "message",
-        "content": "Mark DD-missing done."
-      }
+      { "role": "user", "type": "message", "content": "Mark DD-missing done." }
     ],
     "expectedCall": [
       {
         "functionName": "set_task_status",
-        "arguments": {
-          "taskId": "DD-missing",
-          "status": "done"
-        }
+        "arguments": { "taskId": "DD-missing", "status": "done" },
+        "mockOutput": { "code": "TASK_NOT_FOUND", "error": "Task not found. List tasks and choose a current ID." }
+      },
+      {
+        "functionName": "list_tasks",
+        "optional": true,
+        "mockOutput": [
+          { "id": "DD-101", "title": "Write release notes", "project": "DevDesk", "priority": "medium", "status": "todo" },
+          { "id": "DD-102", "title": "Check keyboard navigation", "project": "Design System", "priority": "high", "status": "todo" },
+          { "id": "DD-103", "title": "Review form validation", "project": "DevDesk", "priority": "high", "status": "in-progress" },
+          { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" },
+          { "id": "DD-105", "title": "Document the setup steps", "project": "Docs", "priority": "medium", "status": "done" },
+          { "id": "DD-106", "title": "Add example tasks", "project": "DevDesk", "priority": "low", "status": "done" }
+        ]
       }
     ]
   },
   {
     "name": "List all tasks",
     "messages": [
-      {
-        "role": "user",
-        "type": "message",
-        "content": "List all tasks."
-      }
+      { "role": "user", "type": "message", "content": "List all tasks." }
     ],
     "expectedCall": [
       {
         "functionName": "list_tasks",
-        "arguments": {}
+        "arguments": {},
+        "mockOutput": [
+          { "id": "DD-101", "title": "Write release notes", "project": "DevDesk", "priority": "medium", "status": "todo" },
+          { "id": "DD-102", "title": "Check keyboard navigation", "project": "Design System", "priority": "high", "status": "todo" },
+          { "id": "DD-103", "title": "Review form validation", "project": "DevDesk", "priority": "high", "status": "in-progress" },
+          { "id": "DD-104", "title": "Write release notes", "project": "Design System", "priority": "low", "status": "in-progress" },
+          { "id": "DD-105", "title": "Document the setup steps", "project": "Docs", "priority": "medium", "status": "done" },
+          { "id": "DD-106", "title": "Add example tasks", "project": "DevDesk", "priority": "low", "status": "done" }
+        ]
       }
     ]
   }
